@@ -139,6 +139,53 @@ export const [AuthProvider, useAuth] = createContextHook((): AuthContextType => 
 
   const loadAuthState = useCallback(async () => {
     try {
+      // 1) First, try to restore a previously persisted auth session (for OTP-based mock user)
+      try {
+        const persisted = await AsyncStorage.getItem('persisted_auth_user');
+        if (persisted) {
+          const parsed = JSON.parse(persisted) as { uid: string; phone: string; name: string };
+          // Reconstruct a minimal mock FirebaseUser compatible object
+          const restoredMockUser = {
+            uid: parsed.uid,
+            phoneNumber: parsed.phone,
+            displayName: parsed.name,
+            email: null,
+            photoURL: null,
+            emailVerified: false,
+            isAnonymous: false,
+            providerId: 'phone',
+            metadata: {
+              creationTime: new Date().toISOString(),
+              lastSignInTime: new Date().toISOString(),
+              lastRefreshTime: new Date().toISOString(),
+            },
+            providerData: [],
+            refreshToken: 'mock_refresh_token',
+            tenantId: null,
+            delete: async () => {},
+            getIdToken: async () => 'mock_id_token',
+            getIdTokenResult: async () => ({
+              authTime: new Date().toISOString(),
+              expirationTime: new Date(Date.now() + 3600000).toISOString(),
+              issuedAtTime: new Date().toISOString(),
+              signInProvider: 'phone',
+              signInSecondFactor: null,
+              token: 'mock_id_token',
+              claims: {},
+            }),
+            reload: async () => {},
+            toJSON: () => ({}),
+          } as unknown as FirebaseUser;
+
+          setFirebaseUser(restoredMockUser);
+          setUser({ id: parsed.uid, phone: parsed.phone, name: parsed.name });
+          return; // Short-circuit: already restored session
+        }
+      } catch (persistError) {
+        console.warn('Failed to restore persisted auth session, continuing with Firebase auth:', persistError);
+      }
+
+      // 2) Fallback: check Firebase Auth current user (if using real Firebase auth)
       const currentUser = auth.currentUser;
       
       if (currentUser) {
@@ -410,10 +457,11 @@ export const [AuthProvider, useAuth] = createContextHook((): AuthContextType => 
       
       // Create a mock user object for the app state
       // Note: In production, this should be replaced with real Firebase Auth
+      const resolvedDisplayName = existingProfile?.name || `User ${cleanPhone.replace('+977', '').slice(-4)}`;
       const mockUser = {
         uid: userId,
         phoneNumber: cleanPhone,
-        displayName: existingProfile?.name || `User ${cleanPhone.replace('+977', '').slice(-4)}`,
+        displayName: resolvedDisplayName,
         email: null,
         photoURL: null,
         emailVerified: false,
@@ -444,6 +492,17 @@ export const [AuthProvider, useAuth] = createContextHook((): AuthContextType => 
 
       // Set the Firebase user in state
       setFirebaseUser(mockUser);
+      
+      // Persist lightweight session so user stays signed in across app restarts
+      try {
+        await AsyncStorage.setItem('persisted_auth_user', JSON.stringify({
+          uid: userId,
+          phone: cleanPhone,
+          name: resolvedDisplayName,
+        }));
+      } catch (persistError) {
+        console.warn('Failed to persist auth session:', persistError);
+      }
       
       // Preload user data for faster dashboard loading
       console.log('🚀 Starting data preload during OTP verification...');
@@ -626,6 +685,13 @@ export const [AuthProvider, useAuth] = createContextHook((): AuthContextType => 
       setUser(null);
       setFirebaseUser(null);
       setIsLoading(false);
+      
+      // Remove persisted session so app doesn't auto-restore
+      try {
+        await AsyncStorage.removeItem('persisted_auth_user');
+      } catch (persistError) {
+        console.warn('Failed to remove persisted auth session:', persistError);
+      }
       
       // CRITICAL: Reset navigation stack completely to prevent back navigation to authenticated pages
       // Use router.replace with dismissAll to clear the entire stack

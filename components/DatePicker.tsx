@@ -180,7 +180,7 @@ export default function DatePicker({ value, onChange, label, error }: DatePicker
               <View style={styles.selectorRow}>
                 {/* Selected Year */}
                 <View style={styles.selectorContainer}>
-                  <Text style={styles.selectorLabel}>
+                  <Text style={[styles.selectorLabel, { color: theme.colors.text }]}>
                     {language === 'ne' ? 'वर्ष' : 'Year'}
                   </Text>
                   <View style={styles.selectedItemContainer}>
@@ -192,7 +192,7 @@ export default function DatePicker({ value, onChange, label, error }: DatePicker
                 
                 {/* Selected Month */}
                 <View style={styles.selectorContainer}>
-                  <Text style={styles.selectorLabel}>
+                  <Text style={[styles.selectorLabel, { color: theme.colors.text }]}>
                     {language === 'ne' ? 'महिना' : 'Month'}
                   </Text>
                   <View style={styles.selectedItemContainer}>
@@ -204,7 +204,7 @@ export default function DatePicker({ value, onChange, label, error }: DatePicker
                 
                 {/* Selected Day */}
                 <View style={styles.selectorContainer}>
-                  <Text style={styles.selectorLabel}>
+                  <Text style={[styles.selectorLabel, { color: theme.colors.text }]}>
                     {language === 'ne' ? `दिन (${formatNumber(maxDay, language)} ${t('days')})` : `Day (${maxDay} ${t('days')})`}
                   </Text>
                   <View style={styles.selectedItemContainer}>
@@ -228,7 +228,7 @@ export default function DatePicker({ value, onChange, label, error }: DatePicker
                         style={styles.selectorItem}
                         onPress={() => handleYearChange(item)}
                       >
-                        <Text style={styles.selectorItemText}>
+                        <Text style={[styles.selectorItemText, { color: theme.colors.text }]}>
                           {formatNumber(item, language)}
                         </Text>
                       </TouchableOpacity>
@@ -250,7 +250,7 @@ export default function DatePicker({ value, onChange, label, error }: DatePicker
                         style={styles.selectorItem}
                         onPress={() => handleMonthChange(item.index)}
                       >
-                        <Text style={styles.selectorItemText}>
+                        <Text style={[styles.selectorItemText, { color: theme.colors.text }]}>
                           {getLocalizedMonthName(item.index - 1)}
                         </Text>
                       </TouchableOpacity>
@@ -272,7 +272,7 @@ export default function DatePicker({ value, onChange, label, error }: DatePicker
                         style={styles.selectorItem}
                         onPress={() => setTempDate(prev => ({ ...prev, day: item }))}
                       >
-                        <Text style={styles.selectorItemText}>
+                        <Text style={[styles.selectorItemText, { color: theme.colors.text }]}>
                           {formatNumber(item, language)}
                         </Text>
                       </TouchableOpacity>
@@ -290,7 +290,7 @@ export default function DatePicker({ value, onChange, label, error }: DatePicker
                 style={[styles.cancelButton, { borderColor: theme.colors.border }]} 
                 onPress={handleCancel}
               >
-                <Text style={[styles.cancelButtonText, { color: theme.colors.textSecondary }]}>{t('cancel')}</Text>
+                <Text style={[styles.cancelButtonText, { color: theme.colors.text }]}>{t('cancel')}</Text>
               </Pressable>
               <Pressable 
                 style={[styles.confirmButton, { backgroundColor: theme.colors.primary }]} 

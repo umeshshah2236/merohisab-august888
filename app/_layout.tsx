@@ -4,7 +4,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useMemo, useLayoutEffect } from "react";
 import { BackHandler, Platform, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets, SafeAreaProvider, initialWindowMetrics } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -322,32 +322,34 @@ export default function RootLayout() {
 
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <StatusBar 
-          style="auto" 
-          translucent={false}
-          hidden={false}
-        />
-                        <ThemeProvider>
-                  <LanguageProvider>
-                    <NetworkProvider>
-                      <AuthProvider>
-                        <UserProfileProvider>
-                          <CustomersProvider>
-                            <TransactionEntriesProvider>
-                              <ContextSyncProvider>
-                                <RootBackgroundWrapper>
-                                    <RootLayoutNav />
-                                </RootBackgroundWrapper>
-                              </ContextSyncProvider>
-                            </TransactionEntriesProvider>
-                          </CustomersProvider>
-                        </UserProfileProvider>
-                      </AuthProvider>
-                    </NetworkProvider>
-                  </LanguageProvider>
-                </ThemeProvider>
-      </QueryClientProvider>
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <QueryClientProvider client={queryClient}>
+          <StatusBar 
+            style="auto" 
+            translucent={false}
+            hidden={false}
+          />
+                          <ThemeProvider>
+                    <LanguageProvider>
+                      <NetworkProvider>
+                        <AuthProvider>
+                          <UserProfileProvider>
+                            <CustomersProvider>
+                              <TransactionEntriesProvider>
+                                <ContextSyncProvider>
+                                  <RootBackgroundWrapper>
+                                      <RootLayoutNav />
+                                  </RootBackgroundWrapper>
+                                </ContextSyncProvider>
+                              </TransactionEntriesProvider>
+                            </CustomersProvider>
+                          </UserProfileProvider>
+                        </AuthProvider>
+                      </NetworkProvider>
+                    </LanguageProvider>
+                  </ThemeProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>
     </ErrorBoundary>
   );
 }
